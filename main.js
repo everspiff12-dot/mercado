@@ -1285,8 +1285,8 @@ function configurarEventos() {
             return;
         }
 
-        console.log('✅ Usuário autenticado:', user.email, 'ID:', user.id);
-        console.log('📤 Fazendo upload de imagens...');
+        console.log('✅ Usuário autenticado:', user.email);
+        mostrarToast('📤 Enviando imagens...');
         
         const inputImagens = document.getElementById('afiliadoLogo');
         let resultadoUpload = { logo: null, fotos: [] };
@@ -1338,8 +1338,8 @@ function configurarEventos() {
             id_transacao_mercadopago: null
         };
         
-        // ✅ Geocodificar com Fallback (Rua -> Bairro -> Cidade)
-        console.log('📍 Iniciando geocodificação inteligente com fallback...');
+        // Geocodificar com Fallback
+        mostrarToast('📍 Localizando endereço...');
         const coords = await obterCoordenadasComFallback(dadosAfiliado);
 
         if (coords) {
@@ -1354,7 +1354,7 @@ function configurarEventos() {
             return;
         }
 
-            console.log('🔄 Salvando dados como PENDENTE no Supabase...');
+            mostrarToast('💾 Salvando dados...');
             
             // ✅ UPSERT no Supabase (Atualiza se já existir, insere se for novo)
             // Usamos 'usuario_id' como critério de conflito para garantir 1 perfil por conta
@@ -1368,9 +1368,9 @@ function configurarEventos() {
                 .single();
             
             if (insertError) throw insertError;
-            console.log('✅ Registro persistido no Supabase ID:', registroSalvo?.id);
+            console.log('✅ Registro persistido:', registroSalvo?.id);
             
-            console.log('💳 Iniciando integração com Mercado Pago...');
+            mostrarToast('💳 Gerando pagamento...');
             
             const precoNumerico = parseFloat(dadosAfiliado.preco_plano.replace('R$', '').replace('.', '').replace(',', '.').trim());
             if (isNaN(precoNumerico) || precoNumerico <= 0) {
