@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Pagamento Confirmado ✅</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="text-align:center; padding: 60px 20px;">
+        <h1 style="color: #720FE5; font-size: 32px;">✅ Pagamento Confirmado!</h1>
+        <p style="font-size: 18px; margin: 20px 0;">Seu cadastro foi ativado com sucesso.</p>
+        <p>Você receberá um e-mail com os próximos passos em instantes.</p>
+        <button class="btn-primary" onclick="window.location.href='index.html'">
+            Voltar para a página inicial
+        </button>
+    </div>
+    <script>
+        // ✅ Atualizar UI localmente (opcional)
+        const urlParams = new URLSearchParams(window.location.search);
+        const collectionId = urlParams.get('collection_id');
+        if (collectionId) {
+            console.log('Pagamento confirmado:', collectionId);
+        }
+    </script>
+</body>
+</html>

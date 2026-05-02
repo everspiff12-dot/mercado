@@ -1,0 +1,556 @@
+ <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrinho de Compras - Serviços e Compras sem sair de casa</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="logo.ico">
+    <!-- ✅ Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- ✅ Supabase SDK (apenas UMA vez) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>    
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+</head>
+<body>
+            <!-- Cabeçalho: layout horizontal ultra-compacto em linha única -->
+            <header class="header">
+                <div class="header-inner">
+                    <!-- Navegação com destaque -->
+                    <nav class="main-nav">
+                        <ul>
+                            <li><a class="nav-link active" onclick="mostrarPagina('afiliados')">Afiliados</a></li>
+                            <li><a class="nav-link" onclick="mostrarPagina('seja-afiliado')">Seja afiliado</a></li>
+                        </ul>
+                    </nav>
+                    
+                    <!-- Tagline central compacta -->
+                    <p class="tagline">compras e serviços sem sair de casa</p>
+                    
+                    <!-- ✅ Área dinâmica: login/logout + logo em linha -->
+                    <div class="header-actions">
+                        <!-- Estado não logado -->
+                        <div id="headerNaoLogado" class="auth-container">
+                            <button class="btn-cliente" onclick="mostrarPagina('login-cliente')">Entrar</button>
+                            <button class="btn-cliente btn-destaque" onclick="mostrarPagina('cadastro-completo')">Cadastre-se Grátis</button>
+                        </div>
+                        
+                        <!-- Estado logado (controlado via CSS/JS) -->
+                        <div id="headerLogado" class="auth-container">
+                            <span id="mensagemBoasVindas" class="welcome-msg">Bem-vindo</span>
+                            <button class="btn-cliente btn-small" onclick="mostrarPagina('perfil-cliente')">Seus dados</button>
+                            <button class="btn-cliente btn-small" onclick="logoutUsuario()">Sair</button>
+                        </div>
+                        
+                        <img src="logo.png" alt="Carrinho de Compras" class="logo-img" onerror="this.style.display='none'">
+                    </div>
+                </div>
+            </header>
+
+    <!-- Conteúdo Principal -->
+    <main id="mainContent">
+        
+        <!-- 🔹 PÁGINA 1: LISTA DE AFILIADOS (página inicial - ÚNICA visível ao carregar) -->
+        <div id="paginaAfiliados">
+            <section class="products-section">
+                <div class="container">
+                    <h2>Encontre um profissional ou loja perto de você</h2>
+                    
+                    <!-- Busca anônima -->
+                    <div class="filtros-area">
+                        <div class="filtros-grid">
+                            <!-- Coluna 1: Todos os inputs empilhados -->
+                            <div class="filtros-col filtros-col-inputs">
+                                <label class="label-busca">Onde você está?</label>
+                                <input type="text" id="filtroEstado" list="listaEstadosBusca" placeholder="Estado (ex: SP)">
+                                <datalist id="listaEstadosBusca"></datalist>
+                                <input type="text" id="filtroCidade" list="listaCidadesBusca" placeholder="Cidade" disabled>
+                                <datalist id="listaCidadesBusca"></datalist>
+                                <input type="text" id="filtroRua" placeholder="Rua">
+                                <input type="text" id="filtroNumero" placeholder="Número">
+                                <input type="text" id="filtroRegiao" placeholder="Bairro ou Região">
+                                
+                                <label class="label-busca">O que você procura?</label>
+                                <select id="filtroComercio">
+                                    <option value="">Todos os serviços...</option>
+                                    <!-- opções omitidas para brevidade, mantidas no arquivo real -->
+                                    <option value="pedreiro">🧱 Pedreiro</option><option value="mercado">🛒 Compras de mercado</option><option value="barbeiro">✂️ Barbeiro</option><option value="jardineiro">🌿 Jardineiro</option><option value="marceneiro">🪚 Marceneiro</option><option value="posto">⛽ Posto de gasolina</option><option value="eletronicos">📱 Produtos eletrônicos</option><option value="conserto-celular">🔧 Conserto de celular</option><option value="vidracaria">🪟 Vidraçaria</option><option value="mecanico">🚗 Mecânico</option><option value="diarista">🧹 Diarista</option><option value="eletricista">⚡ Eletricista</option><option value="encanador">🚰 Encanador</option><option value="pintor">🎨 Pintor</option>
+                                </select>
+                            </div>
+
+                            <!-- Coluna 2: Ações (Buscar/Limpar/Área) -->
+                            <div class="filtros-col filtros-col-actions">
+                                <button class="btn-primary" onclick="filtrarAfiliados()">Buscar Agora</button>
+                                <button class="btn-primary" onclick="limparFiltros()">Limpar Busca</button>
+                                
+                                <div class="checkbox-area-destaque">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="buscarMinhaArea" onchange="toggleBuscaArea()">
+                                        <span>buscar na minha área</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Coluna 3: Recomendação Especial -->
+                            <div class="filtros-col">
+                                <div id="blocoRecomendacao" class="recomendacao-coluna">
+                                    <span class="badge-voto">RECOMENDADO</span>
+                                    <div id="cardRecomendado">
+                                        <!-- Exemplo Fictício João Silva -->
+                                        <div class="mini-card-rec">
+                                            <div class="rec-icon">🧱</div>
+                                            <h4>João Silva</h4>
+                                            <p>Pedreiro Profissional</p>
+                                            <span class="rec-distancia">a 2.5km de você</span>
+                                            <button class="btn-contato-rec">Contatar Agora</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mapaContainer" style="height: 400px; width: 100%; margin: 20px 0; border-radius: 10px; display: none;">
+                        <div id="mapa" style="height: 100%; width: 100%;"></div>
+                    </div>
+
+                    <!-- Grade de Profissionais -->
+                    <div id="listaAfiliados" class="products-grid"></div>
+                    <!-- ✅ Container da Paginação -->
+                    <div id="paginacaoAfiliados" class="pagination-container"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 🔹 PÁGINA 2: SEJA UM AFILIADO (oculta por padrão) -->
+        <div id="paginaSejaAfiliado" class="pagina-oculta">
+            <section class="products-section">
+                <div class="container">
+                    <h2 id="tituloPlanos">Escolha seu plano</h2>
+                    <p class="subtitulo">Selecione o tipo de serviço e escolha o plano ideal para seu negócio</p>
+                    
+                    <!-- ✅ Seletor de planos MOVIDO para dentro da página de afiliado -->
+                    <div id="seletorPlanos" class="planos-selector">
+                        <div class="container">
+                            <div class="selector-buttons">
+                                <button id="btnComSite" class="btn-primary selector-btn active">Criar site</button>
+                                <button id="btnSemSite" class="btn-primary selector-btn">plano simples</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de produtos (sempre visível nesta página) -->
+                    <div id="produtosContainer" class="plans-grid"></div>
+                
+
+
+                    <!-- ✅ Formulário de cadastro afiliado: OCULTO até escolher plano -->
+                    <div id="formCadastroAfiliado" class="form-cadastro form-oculta">
+                        <h3 class="form-title">Complete seu cadastro</h3>
+                        <p id="produtoSelecionadoInfo" class="produto-info"></p>
+                        
+                        <form id="formAfiliado">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>* Nome de contato:</label>
+                                    <input type="text" id="afiliadoNome" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Nome do negócio:</label>
+                                    <input type="text" id="afiliadoEmpresa" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* E-mail:</label>
+                                    <input type="email" id="afiliadoEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Telefone/WhatsApp:</label>
+                                    <input type="tel" id="afiliadoTelefone" placeholder="(00) 00000-0000" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Estado (UF):</label>
+                                    <input type="text" id="afiliadoEstado" list="listaEstadosAfiliado" placeholder="Selecione ou digite..." required>
+                                    <datalist id="listaEstadosAfiliado"></datalist>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Cidade:</label>
+                                    <input type="text" id="afiliadoCidade" list="listaCidadesAfiliado" placeholder="Selecione ou digite..." required disabled>
+                                    <datalist id="listaCidadesAfiliado"></datalist>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Logradouro (Rua/Av):</label>
+                                    <input type="text" id="afiliadoLogradouro" placeholder="Ex: Rua das Flores" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Número:</label>
+                                    <input type="text" id="afiliadoNumero" placeholder="Ex: 123" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Bairro:</label>
+                                    <input type="text" id="afiliadoBairro" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Tipo de serviço:</label>
+                                    <select id="afiliadoComercio" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="pedreiro">🧱 Pedreiro</option>
+                                        <option value="mercado">🛒 Compras de mercado</option>
+                                        <option value="barbeiro">✂️ Barbeiro</option>
+                                        <option value="jardineiro">🌿 Jardineiro</option>
+                                        <option value="marceneiro">🪚 Marceneiro</option>
+                                        <option value="posto">⛽ Posto de gasolina</option>
+                                        <option value="eletronicos">📱 Produtos eletrônicos</option>
+                                        <option value="conserto-celular">🔧 Conserto de celular</option>
+                                        <option value="vidracaria">🪟 Vidraçaria</option>
+                                        <option value="mecanico">🚗 Mecânico</option>
+                                        <option value="diarista">🧹 Diarista</option>
+                                        <option value="eletricista">⚡ Eletricista</option>
+                                        <option value="encanador">🚰 Encanador</option>
+                                        <option value="pintor">🎨 Pintor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>📸 Fotos do serviço/Logo (até 5):</label>
+                                    <input type="file" id="afiliadoLogo" accept="image/*" multiple>
+                                </div>
+                                <div class="form-group">
+                                    <label>* E-mail Comercial (Público):</label>
+                                    <input type="email" id="afiliadoEmailComercial" placeholder="E-mail que aparecerá no card" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>* Área de atendimento:</label>
+                                    <select id="afiliadoAreaAtendimento" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="10">📍 10 km do seu perímetro</option>
+                                        <option value="25">📍 25 km do seu perímetro</option>
+                                        <option value="50">📍 50 km do seu perímetro</option>
+                                        <option value="100">📍 100 km do seu perímetro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- ✅ Campo de descrição do site: só aparece se plano for COM site -->
+                            <div class="form-group" id="grupoDescricaoSite">
+                                <label>🎨 Descreva detalhes de como quer seu site (opcional):</label>
+                                <textarea id="afiliadoEstilo" rows="3" placeholder="Caso esse campo esteja em branco, o design será baseado na sua logomarca"></textarea>
+                            </div>
+                            
+                            <!-- ✅ Campo para quem NÃO quer criação de site: URL do site existente -->
+                            <div class="form-group-flex" id="grupoUrlSite" style="display:none; border: 1px dashed #720FE5; padding: 15px; border-radius: 8px;">
+                                <label style="color: #720FE5; margin-bottom: 10px; display: block;">🌐 Divulgação Comercial (Preencha ao menos um):</label>
+                                <input type="url" id="afiliadoUrlSite" placeholder="URL do seu site (Ex: https://meusite.com)">
+                                <input type="tel" id="afiliadoWhatsapp" placeholder="WhatsApp Comercial (Ex: 11999999999)" style="margin-top: 10px;">
+                            </div>
+                            
+                            <!-- ✅ Checkbox de termos - ÚNICO para cadastro de dados (com mensagem de erro inline) -->
+                            <div class="termos-checkbox" id="containerAfiliadoTermos">
+                                <input type="checkbox" id="afiliadoTermos">
+                                <label>* Aceito os <a href="#" onclick="mostrarTermos(); return false;">Termos de Uso</a></label>
+                                <p class="termos-mensagem-erro">Você precisa aceitar os Termos de Uso para enviar o cadastro.</p>
+                            </div>
+
+                            <button type="submit" id="btnEnviarAfiliado" class="btn-primary" disabled>
+                                Enviar e Ir para Pagamento
+                            </button>
+                            <button type="button" class="btn-primary" onclick="cancelarCadastroAfiliado()">
+                                ← Voltar para planos
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- 🔹 PÁGINA 3: LOGIN CLIENTE (oculta por padrão) -->
+        <div id="paginaLoginCliente" class="pagina-oculta">
+            <section class="products-section">
+                <div class="container">
+                    <h2>Acesso do Cliente</h2>
+                    <p class="subtitulo">Entre com seu e-mail e senha para acessar suas solicitações</p>
+                    
+                    <form id="formLogin" class="form-cadastro form-login">
+                        <div class="form-group">
+                            <label>* E-mail:</label>
+                            <input type="email" id="loginEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>* Senha:</label>
+                            <input type="password" id="loginSenha" required>
+                        </div>
+                        
+                        <div style="text-align: right; margin: 10px 0;">
+                            <a href="#" onclick="mostrarPagina('recuperar-senha'); return false;">Esqueceu a senha?</a>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Entrar</button>
+                    </form>
+                    
+                    <p class="link-cadastro">
+                        Não tem conta? 
+                        <a href="#" onclick="mostrarPagina('cadastro-completo'); return false;">Crie uma conta primeiro</a><br>
+                        <small style="color: #666; margin-top: 5px; display: block;">
+                            Após criar a conta e confirmar seu e-mail, volte em "Seja afiliado" para completar o cadastro.
+                        </small>
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 🔹 PÁGINA 4: CADASTRO COMPLETO (oculta por padrão) -->
+        <div id="paginaCadastroCompleto" class="pagina-oculta">
+            <section class="products-section">
+                <div class="container">
+                    <h2>Cadastro Gratuito</h2>
+                    <p class="subtitulo">Preencha seus dados para receber propostas de profissionais</p>
+                    
+                    <form id="formCadastroCompleto" class="form-cadastro">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>* Seu nome:</label>
+                                <input type="text" id="cadNome" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* E-mail:</label>
+                                <input type="email" id="cadEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Criar senha:</label>
+                                <input type="password" id="cadSenha" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Logradouro (Rua/Av):</label>
+                                <input type="text" id="cadLogradouro" placeholder="Ex: Rua das Flores" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Número:</label>
+                                <input type="text" id="cadNumero" placeholder="Ex: 123" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Bairro:</label>
+                                <input type="text" id="cadBairro" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Estado:</label>
+                                <input type="text" id="cadEstado" list="listaEstadosCad" placeholder="Ex: SP" required>
+                                <datalist id="listaEstadosCad"></datalist>
+                            </div>
+                            <div class="form-group">
+                                <label>* Cidade:</label>
+                                <input type="text" id="cadCidade" list="listaCidadesCad" placeholder="Selecione o estado primeiro" required disabled>
+                                <datalist id="listaCidadesCad"></datalist>
+                            </div>
+                        </div>
+                        
+                        <!-- ✅ Checkbox de termos para cadastro de cliente -->
+                        <div class="termos-checkbox">
+                            <input type="checkbox" id="cadTermos" required>
+                            <label>* Aceito os <a href="#" onclick="mostrarTermos(); return false;">Termos de Uso</a></label>
+                        </div>
+                        
+                        <button type="submit" id="btnEnviarCadastro" class="btn-primary" disabled>
+                            Cadastrar
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <!-- 🔹 PÁGINA 7: PERFIL DO CLIENTE (ver e atualizar dados) -->
+        <div id="paginaPerfilCliente" class="pagina-oculta">
+            <section class="products-section">
+                <div class="container">
+                    <h2>Seus Dados</h2>
+                    <p class="subtitulo">Confira e atualize suas informações de cadastro</p>
+                    
+                    <form id="formPerfilCliente" class="form-cadastro">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nome completo:</label>
+                                <input type="text" id="perfilNome" required>
+                            </div>
+                            <div class="form-group">
+                                <label>E-mail:</label>
+                                <input type="email" id="perfilEmail" readonly style="background: #f0f0f0; cursor: not-allowed;">
+                            </div>
+                            <div class="form-group">
+                                <label>Logradouro (Rua/Av):</label>
+                                <input type="text" id="perfilLogradouro" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Número:</label>
+                                <input type="text" id="perfilNumero" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Bairro:</label>
+                                <input type="text" id="perfilBairro" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado:</label>
+                                <input type="text" id="perfilEstado" list="listaEstadosPerfil" required>
+                                <datalist id="listaEstadosPerfil"></datalist>
+                            </div>
+                            <div class="form-group">
+                                <label>Cidade:</label>
+                                <input type="text" id="perfilCidade" list="listaCidadesPerfil" required>
+                                <datalist id="listaCidadesPerfil"></datalist>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="btnAtualizarPerfil" class="btn-primary">
+                            Atualizar Meus Dados
+                        </button>
+                        <button type="button" class="btn-primary" onclick="mostrarPagina('afiliados')" style="margin-top: 10px; opacity: 0.8;">
+                            Voltar
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <!-- 🔹 PÁGINA 5: RECUPERAR SENHA (oculta por padrão) -->
+        <div id="paginaRecuperarSenha" class="pagina-oculta">
+            <section class="products-section">
+                <div class="container">
+                    <h2>Recuperar Senha</h2>
+                    <p class="subtitulo">Digite seu e-mail para receber instruções</p>
+                    
+                    <form id="formRecuperar" class="form-cadastro form-login">
+                        <div class="form-group">
+                            <label>* E-mail cadastrado:</label>
+                            <input type="email" id="recEmail" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Enviar instruções</button>
+                    </form>
+                    
+                    <p class="link-voltar">
+                        <a href="#" onclick="mostrarPagina('login-cliente'); return false;">← Voltar para login</a>
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- 🔹 PÁGINA 6: ATUALIZAR DADOS DE AFILIADO (nova) -->
+        <div id="paginaAtualizarAfiliado" class="pagina-oculta">
+            <section class="products-section">
+                <div class="container">
+                    <h2>Atualizar Dados de Afiliado</h2>
+                    <p class="subtitulo">Edite suas informações para manter seu perfil atualizado</p>
+                    
+                    <form id="formAtualizarAfiliado" class="form-cadastro">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>* Nome de contato:</label>
+                                <input type="text" id="atualizaNome" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Nome do negócio:</label>
+                                <input type="text" id="atualizaEmpresa" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* E-mail:</label>
+                                <input type="email" id="atualizaEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Telefone/WhatsApp:</label>
+                                <input type="tel" id="atualizaTelefone" placeholder="(00) 00000-0000" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Estado:</label>
+                                <input type="text" id="atualizaEstado" placeholder="Ex: SP" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Cidade:</label>
+                                <input type="text" id="atualizaCidade" required>
+                            </div>
+                            <div class="form-group">
+                                <label>* Tipo de serviço:</label>
+                                <select id="atualizaComercio" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="pedreiro">🧱 Pedreiro</option>
+                                    <option value="mercado">🛒 Compras de mercado</option>
+                                    <option value="barbeiro">✂️ Barbeiro</option>
+                                    <option value="jardineiro">🌿 Jardineiro</option>
+                                    <option value="marceneiro">🪚 Marceneiro</option>
+                                    <option value="posto">⛽ Posto de gasolina</option>
+                                    <option value="eletronicos">📱 Produtos eletrônicos</option>
+                                    <option value="conserto-celular">🔧 Conserto de celular</option>
+                                    <option value="vidracaria">🪟 Vidraçaria</option>
+                                    <option value="mecanico">🚗 Mecânico</option>
+                                    <option value="diarista">🧹 Diarista</option>
+                                    <option value="eletricista">⚡ Eletricista</option>
+                                    <option value="encanador">🚰 Encanador</option>
+                                    <option value="pintor">🎨 Pintor</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>* Área de atendimento:</label>
+                                <select id="atualizaAreaAtendimento" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="10">📍 10 km do seu perímetro</option>
+                                    <option value="25">📍 25 km do seu perímetro</option>
+                                    <option value="50">📍 50 km do seu perímetro</option>
+                                    <option value="100">📍 100 km do seu perímetro</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>📸 Nova logomarca (opcional):</label>
+                            <input type="file" id="atualizaLogo" accept="image/*" multiple>
+                        </div>
+                        
+                        <!-- ✅ REMOVIDO: campo de descrição do site, pois atualização não cria novo site -->
+                        
+                        <div class="termos-checkbox">
+                            <input type="checkbox" id="atualizaTermos" required>
+                            <label>* Confirmo que as informações estão corretas</label>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary" style="width: 100%;">Salvar Alterações</button>
+                    </form>
+                </div>
+            </section>
+              <div id="overlayAlerta"></div>
+        </div>
+
+    </main>
+
+    <!-- ✅ Alertas movidos para fora das páginas para estarem sempre disponíveis -->
+    <div id="overlayAlerta"></div>
+    <div id="alertaTermos" role="alert" aria-live="assertive">
+        <span class="icone-erro"></span>
+        <h3 class="titulo-alerta">Atenção!</h3>
+        <p class="mensagem-alerta">Você precisa aceitar os Termos de Uso para enviar o cadastro.</p>
+        <button class="btn-fechar-alerta" onclick="fecharAlertaTermos()">Entendi, vou aceitar</button>
+    </div>
+
+    <!-- Rodapé -->
+    <footer class="footer">
+        <div class="container">
+            <div id="notificacaoAfiliado" class="notificacao-footer" style="display: none;"></div>
+            <p>© 2025 Carrinho de Compras - Todos os direitos reservados</p>
+            <p class="footer-sub">📍 Profissionais em todo o Brasil | 💼 Cadastre seu serviço</p>
+        </div>
+    </footer>
+
+    <!-- Modal de Termos -->
+    <div id="modalTermos" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModalTermos()">&times;</span>
+            <h2 class="modal-title">Termos de Uso</h2>
+            <div class="modal-body">
+                <p><strong>1. Serviços:</strong> Ao utilizar nossa plataforma, você concorda com as condições deste termo.</p>
+                <p><strong>2. Afiliados:</strong> Profissionais cadastrados são responsáveis pela qualidade dos serviços.</p>
+                <p><strong>3. Pagamento:</strong> Valores combinados diretamente entre cliente e afiliado.</p>
+                <p><strong>4. Privacidade:</strong> Seus dados são usados apenas para conectar você aos profissionais.</p>
+                <p><strong>5. Cancelamento:</strong> Você pode cancelar seu cadastro a qualquer momento.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="main.js"></script>
+
+</body>
+</html> 

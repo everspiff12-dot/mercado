@@ -1,0 +1,901 @@
+ @font-face {
+    font-family: 'Slabo27px';
+    src: url('Slabo27px-Regular.ttf') format('truetype');
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Slabo27px', serif;
+    background: linear-gradient(to bottom, #ffffff, #c0c0c0);
+    /* ✅ Fundo para preencher as laterais em telas maiores */
+    background-image: url('background.png');
+    background-repeat: no-repeat;
+    background-position: top center; /* Alinha no topo e centraliza horizontalmente */
+    min-height: 100vh;
+    color: #333;
+    line-height: 1.5;
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+/* ============ HEADER - ULTRA COMPACTO ============ */
+.header {
+    background: white;
+    border-bottom: 3px solid #720FE5;
+    padding: 5px 0;
+    position: relative; /* ✅ Header agora rola junto com a página */
+    z-index: 100;
+}
+
+.header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    flex-wrap: wrap;
+}
+
+/* ✅ Navegação com DESTAQUE */
+.main-nav ul {
+    display: flex;
+    list-style: none;
+    gap: 8px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: #333;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s;
+    background: #f5f5f5;
+}
+
+.nav-link:hover {
+    background: #720FE5;
+    color: white;
+}
+
+.nav-link.active {
+    background: #720FE5;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(114, 15, 229, 0.3);
+}
+
+/* ✅ Tagline MAIOR e em NEGRITO */
+.tagline {
+    color: #333;
+    font-size: 26px; /* ✅ Ainda mais destaque */
+    font-weight: bold; /* ✅ Negrito */
+    text-align: center;
+    flex: 1;
+    min-width: 250px;
+    margin: 25px 40px; /* ✅ Muito mais respiro */
+    line-height: 1.3;
+    padding: 10px; /* ✅ Área de respiro maior */
+}
+
+/* ✅ Logo + botão lado a lado - Logo MAIOR e no canto */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+#headerLogado {
+    display: none;
+    flex-direction: column; /* ✅ Alinha verticalmente: mensagem em cima, botão embaixo */
+    align-items: center;     /* ✅ Alinhamento central para um visual mais orgânico */
+    gap: 2px;                /* ✅ Colagem maior entre texto e botão */
+    justify-content: center;
+}
+#headerLogado.ativo {
+    display: flex;
+}
+#headerNaoLogado {
+    display: flex;
+    flex-direction: column; /* ✅ Empilha Entrar e Cadastrar */
+    gap: 10px;
+    align-items: flex-end; /* Alinha à direita junto com a logo */
+    justify-content: center;
+}
+
+#headerNaoLogado.oculto {
+    display: none;
+}
+
+#mensagemBoasVindas {
+    font-size: 20px;         /* ✅ Letra significativamente maior */
+    color: #720FE5;          /* ✅ Roxo para dar destaque à chamada */
+    font-weight: bold;
+    white-space: nowrap;
+    background: none;        /* ✅ Remove o fundo cinza */
+    padding: 0;
+    border: none;            /* ✅ Remove a borda lateral */
+}
+
+/* Responsivo */
+@media (max-width: 850px) {
+    #mensagemBoasVindas {
+        font-size: 13px;
+        padding: 5px 10px;
+    }
+    .btn-cliente {
+        padding: 10px 20px;
+        font-size: 13px;
+        min-width: 70px;
+    }
+}
+
+.logo-img {
+    height: 200px; /* ✅ Aumentado de 90px para 140px */
+    width: auto;
+    display: block;
+}
+
+/* Botão "Sou cliente" compacto e integrado */
+.btn-cliente {
+    background-image: url('Button_01.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-color: transparent !important;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-family: 'Slabo27px', serif;
+    font-size: 14px;
+    padding: 12px 28px;
+    min-width: 140px;
+    min-height: 42px;
+    white-space: nowrap;
+    transition: all 0.3s;
+    box-shadow: none !important;
+    outline: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* ✅ Botão de Destaque no Header (Novo) */
+.btn-destaque {
+    font-weight: bold;
+    filter: hue-rotate(45deg); /* Dá um tom levemente diferente para destacar do login */
+}
+
+.btn-cliente:hover { background-image: url('Button_02.png'); }
+.btn-cliente:active { background-image: url('Button_03.png'); }
+
+/* ✅ Ajuste específico para o botão Sair no Header (menos chamativo) */
+.btn-small {
+    font-size: 15px !important;
+    padding: 10px 25px !important;
+    min-width: 120px !important;
+    min-height: 38px !important;
+    opacity: 0.9; /* Leve transparência para não brilhar tanto quanto o texto */
+}
+
+/* ============ BOTÕES PRINCIPAIS ============ */
+.btn-primary {
+    background-image: url('Button_01.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-color: transparent !important;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-family: 'Slabo27px', serif;
+    font-size: 22px; /* ✅ +50% */
+    padding: 25px 65px; /* ✅ +50% */
+    min-width: 330px; /* ✅ +50% */
+    min-height: 85px; /* ✅ +50% */
+    white-space: nowrap;
+    transition: all 0.3s;
+    display: inline-block;
+    text-align: center;
+    box-shadow: none !important;
+    outline: none !important;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.btn-primary:hover { background-image: url('Button_02.png'); }
+.btn-primary:active { background-image: url('Button_03.png'); }
+
+/* ✅ Botão específico para dentro dos Cards (evita vazar) */
+.btn-card {
+    min-width: 120px !important; /* ✅ Garante um tamanho mínimo visível */
+    width: 100% !important;
+    max-width: 280px !important;
+    min-height: 50px !important;
+    font-size: 16px !important;
+    margin-top: 0 !important;
+    padding: 10px 15px !important; /* ✅ Reduz o padding para o botão não "estourar" o card */
+    background-size: 100% 100% !important; /* Garante que a imagem preencha o botão sem sobrar */
+    white-space: normal !important; /* ✅ Permite que o texto do botão quebre linha se necessário */
+}
+
+.card-actions-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: 8px;   /* ✅ Aproxima os botões da profissão acima */
+    padding-top: 5px;
+}
+
+/* ✅ Estilo da Paginação com botões redondos */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 40px 0;
+}
+
+.btn-pagination {
+    background-image: url('Button_04.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: transparent;
+    border: none;
+    width: 65px;
+    height: 65px;
+    cursor: pointer;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.btn-pagination:hover { background-image: url('Button_05.png'); transform: scale(1.1); }
+.btn-pagination.active { 
+    background-image: url('Button_06.png'); 
+    transform: scale(1.15);
+}
+
+/* ✅ Botão de cadastro maietor MAIORES (texto longo) */
+.selector-btn { 
+    padding: 30px 75px;
+    min-width: 480px;
+    min-height: 95px;
+    font-size: 24px;
+}
+
+/* ✅ Ajuste do botão do header (btn-cliente) */
+.btn-cliente {
+    font-size: 18px; /* ✅ +50% */
+    padding: 18px 42px; /* ✅ +50% */
+    min-width: 210px; /* ✅ +50% */
+    min-height: 63px; /* ✅ +50% */
+}
+.selector-btn.active {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(114, 15, 229, 0.5);
+}
+
+/* ============ SELETOR DE PLANOS ============ */
+.planos-selector {
+    background: white;
+    padding: 15px 0;
+    border-bottom: 2px solid #720FE5;
+}
+.selector-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 25px; /* ✅ Aumentado gap */
+    flex-wrap: wrap;
+}
+
+/* ============ PROTEÇÃO DE FORMULÁRIOS ============ */
+.pagina-oculta { display: none !important; }
+.form-oculta { display: none !important; }
+
+.pagina-oculta.ativa,
+.form-oculta.ativa { display: block !important; }
+
+/* ============ SEÇÕES ============ */
+.products-section { padding: 15px 0; } /* ✅ Reduzido o padding da seção */
+.products-section h2 {
+    text-align: center;
+    color: #720FE5;
+    font-size: 22px; /* ✅ Chamada reduzida de 26px */
+    margin-bottom: 15px;
+}
+.subtitulo {
+    text-align: center;
+    color: #666;
+    margin-bottom: 28px;
+    font-size: 15px;
+}
+
+/* ============ GRID DE CARDS ============ */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* ✅ Força 4 colunas no desktop */
+    gap: 5px; /* ✅ Espaçamento mínimo entre cards */
+    align-items: stretch; 
+}
+
+/* ============ GRID DE PLANOS (INDEPENDENTE) ============ */
+.plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* ✅ minmax(0) impede que o conteúdo estique a coluna */
+    gap: 20px; /* ✅ Mais espaço entre as propagandas */
+    align-items: stretch;
+    margin-top: 20px;
+    width: 100%; /* Garante que o grid use 100% do container de 1200px */
+}
+
+.plan-card {
+    background: white;
+    border: 2px solid #720FE5;
+    border-radius: 12px;
+    padding: 30px; /* ✅ Padding generoso para os botões aparecerem */
+    text-align: center;
+    transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 450px; 
+    width: 100%;
+}
+
+.plan-card img {
+    max-width: 100%; /* ✅ Impede que a imagem do preço estoure a largura do card */
+    height: auto;
+    margin: 0 auto 15px;
+    display: block;
+}
+
+.plan-card .btn-primary {
+    min-width: 0 !important; /* ✅ Remove o mínimo de 330px apenas aqui para caber no grid de 3 */
+    width: 100%;
+    padding: 20px 10px; /* Padding mais equilibrado */
+}
+
+.product-card {
+    background: white;
+    border: 2px solid #720FE5;
+    border-radius: 10px;
+    padding: 12px; /* ✅ Padding reduzido para caber mais conteúdo */
+    text-align: center;
+    transition: transform 0.3s;
+    margin: 0 auto;  /* Centraliza o card na sua célula */
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: auto; /* ✅ Removido o formato quadrado para permitir forma retangular */
+    overflow: hidden; /* ✅ Esconde o conteúdo que exceder o card quadrado */
+}
+
+/* ✅ Placeholders totalmente invisíveis */
+.placeholder-card {
+    visibility: hidden !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    pointer-events: none;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(114, 15, 229, 0.2);
+}
+.product-card img {
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto 12px;
+    display: block;
+}
+
+.card-content {
+    flex: none; /* ✅ Impede que o conteúdo se expanda verticalmente */
+}
+
+.product-card h3 { font-size: 16px; margin: 2px 0; color: #333; line-height: 1.2; }
+.preco {
+    font-size: 24px;
+    color: #720FE5;
+    font-weight: bold;
+    margin: 8px 0 12px;
+}
+.product-card p { color: #555; font-size: 12px; margin: 2px 0; }
+
+/* ============ FILTROS ============ */
+.filtros-area {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 28px;
+}
+.filtros-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1.2fr; /* ✅ Três colunas fixas e proporcionais */
+    gap: 15px; /* ✅ Reduzido o espaço entre campos */
+    align-items: stretch; /* ✅ Faz as colunas terem a mesma altura */
+}
+
+.filtros-col {
+    display: flex;
+    flex-direction: column; /* ✅ Garante um item abaixo do outro */
+    gap: 15px;
+    height: 100%;
+}
+
+.label-busca {
+    font-weight: bold;
+    color: #720FE5;
+    font-size: 14px;
+    margin-top: 10px;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.filtros-grid input, .filtros-grid select {
+    padding: 16px;
+    border: 1px solid #720FE5;
+    border-radius: 5px;
+    font-family: 'Slabo27px', serif;
+    font-size: 16px;
+    width: 100%; /* ✅ Garante que ocupem toda a largura da coluna */
+}
+
+/* ✅ Ajuste da Coluna de Recomendação para não ficar "imprensada" */
+.recomendacao-coluna {
+    background: #f3ebff;
+    border: 3px solid #720FE5;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* ✅ Distribui o conteúdo para não ficar imprensado */
+    align-items: center;
+    padding: 30px 20px;
+    height: 100%; /* Ocupa a altura total do grid */
+}
+
+.badge-voto {
+    background: #720FE5;
+    color: white;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.mini-card-rec {
+    width: 100%;
+}
+
+.rec-icon { font-size: 60px; margin-bottom: 15px; }
+.rec-distancia { display: block; font-size: 13px; color: #666; margin: 15px 0; }
+
+.btn-contato-rec {
+    background: #720FE5;
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    font-size: 16px;
+}
+
+.checkbox-area-destaque {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px dashed #720FE5;
+    margin-top: auto; /* Empurra para o final da coluna 2 */
+}
+
+/* ✅ Checkbox "buscar na minha área" */
+.checkbox-area {
+    margin-top: 15px;
+    text-align: center;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #333;
+}
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #720FE5;
+}
+
+/* CTA Cliente */
+.cta-cliente {
+    text-align: center;
+    margin-top: 35px;
+    padding: 22px;
+    background: white;
+    border-radius: 10px;
+    border: 2px dashed #720FE5;
+}
+.cta-cliente p { 
+    margin-bottom: 15px; 
+    font-size: 16px; /* ✅ Texto um pouco maior */
+    color: #333;
+}
+
+/* ============ FORMULÁRIOS ============ */
+.form-cadastro {
+    max-width: 720px;
+    margin: 0 auto;
+    background: white;
+    padding: 28px;
+    border-radius: 10px;
+}
+.form-login { max-width: 380px; }
+
+.form-title {
+    text-align: center;
+    color: #720FE5;
+    margin-bottom: 12px;
+}
+.produto-info {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 22px;
+    color: #333;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.form-group { margin-bottom: 10px; }
+.form-group label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: bold;
+    font-size: 14px;
+}
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 9px;
+    border: 1px solid #720FE5;
+    border-radius: 5px;
+    font-family: 'Slabo27px', serif;
+    font-size: 14px;
+}
+
+/* ✅ Container para empilhar Buscar e Limpar */
+.filtros-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: center;
+    grid-column: span 1; 
+    min-width: 330px; /* ✅ Garante que o container tenha o tamanho do botão */
+}
+.form-group textarea { resize: vertical; min-height: 75px; }
+
+.termos-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin: 18px 0;
+    font-size: 14px;
+}
+.termos-checkbox input { margin-top: 3px; }
+.termos-checkbox a { color: #720FE5; text-decoration: none; }
+
+/* Links auxiliares */
+.link-cadastro, .link-voltar {
+    text-align: center;
+    margin-top: 22px;
+    color: #555;
+    font-size: 14px;
+}
+.link-cadastro a, .link-voltar a {
+    color: #720FE5;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/* Botões do formulário */
+#formAfiliado .btn-primary,
+#formCadastroCompleto .btn-primary,
+#formLogin .btn-primary,
+#formRecuperar .btn-primary {
+    width: 100%;
+    margin-top: 12px;
+}
+
+/* ============ RODAPÉ ============ */
+.footer {
+    background: #333;
+    color: white;
+    padding: 22px 0;
+    margin-top: 45px;
+    text-align: center;
+    font-size: 14px;
+}
+.footer-sub {
+    margin-top: 7px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.notificacao-footer {
+    background: #fff3cd;
+    color: #856404;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    border: 2px solid #ffeeba;
+    text-align: center;
+}
+
+/* ============ MODAL ============ */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+.modal-content {
+    background: white;
+    margin: 12% auto;
+    padding: 22px;
+    border: 3px solid #720FE5;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 480px;
+    text-align: center;
+}
+.modal-title { color: #720FE5; margin-bottom: 12px; }
+.modal-body {
+    max-height: 380px;
+    overflow-y: auto;
+    text-align: left;
+    padding: 0 8px;
+    font-size: 14px;
+}
+.modal-body p { margin: 9px 0; }
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 24px;
+    cursor: pointer;
+}
+.close:hover { color: #720FE5; }
+
+/* ============ RESPONSIVO ============ */
+@media (max-width: 850px) {
+    .header-inner {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        padding: 10px 15px;
+    }
+    
+    .main-nav ul { justify-content: center; flex-wrap: wrap; }
+    .tagline { margin: 5px 0; font-size: 16px; }
+    .header-actions { justify-content: center; }
+    .logo-img { height: 110px; }
+    
+    .form-grid { grid-template-columns: 1fr; }
+    .products-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .selector-buttons { flex-direction: column; align-items: center; }
+    
+    .btn-primary, .selector-btn, .btn-cliente {
+        padding: 16px 38px;
+        min-width: 200px;
+        min-height: 50px;
+        font-size: 14px;
+    }
+    
+    .btn-cadastro {
+        min-width: 240px;
+        min-height: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-img { height: 90px; }
+    .tagline { font-size: 15px; }
+    .nav-link { font-size: 15px; padding: 8px 12px; }
+    
+    .btn-primary, .selector-btn, .btn-cliente {
+        padding: 14px 32px;
+        min-width: 180px;
+        min-height: 48px;
+        font-size: 14px;
+    }
+    
+    .btn-cadastro {
+        min-width: 220px;
+        min-height: 58px;
+    }
+}
+
+#mapaContainer {
+    border: 2px solid #720FE5;
+    box-shadow: 0 4px 12px rgba(114, 15, 229, 0.15);
+}
+
+.leaflet-popup-content {
+    font-family: 'Slabo27px', serif;
+    font-size: 14px;
+}
+
+.leaflet-popup-content h4 {
+    margin: 0 0 8px 0;
+    color: #720FE5;
+}
+
+.leaflet-popup-content p {
+    margin: 4px 0;
+}
+
+/* ========================================
+   ✅ MENSAGEM DE ERRO DOS TERMOS - CSS LIMPO
+   ======================================== */
+
+/* Mensagem oculta por padrão */
+.termos-mensagem-erro {
+    color: #cc0000;
+    font-size: 13px;
+    margin-top: 5px;
+    display: none; /* Mantém oculta inicialmente */
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Container com erro: mostra a mensagem e aplica estilo visual */
+.termos-checkbox.erro {
+    background: #fff5f5;
+    border: 2px solid #ff4444;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.termos-checkbox.erro label {
+    color: #cc0000;
+    font-weight: 600;
+}
+
+.termos-checkbox.erro .termos-mensagem-erro {
+    display: block !important;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================================
+   ✅ ALERTA DE TERMOS - CAIXA VISÍVEL GARANTIDA
+   ======================================== */
+#alertaTermos {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: white;
+    border: 3px solid #ff4444;
+    border-radius: 12px;
+    padding: 25px 30px;
+    max-width: 420px;
+    width: 90%;
+    z-index: 2000;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    display: none;
+    animation: slideInAlert 0.3s ease forwards;
+    text-align: center;
+}
+
+#alertaTermos.ativo {
+    display: block;
+}
+
+@keyframes slideInAlert {
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+#alertaTermos .icone-erro {
+    font-size: 48px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+#alertaTermos .titulo-alerta {
+    font-size: 18px;
+    font-weight: bold;
+    color: #cc0000;
+    margin-bottom: 10px;
+}
+
+#alertaTermos .mensagem-alerta {
+    font-size: 15px;
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+#alertaTermos .btn-fechar-alerta {
+    background: #720FE5;
+    color: white;
+    border: none;
+    padding: 12px 35px;
+    border-radius: 6px;
+    font-family: 'Slabo27px', serif;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#alertaTermos .btn-fechar-alerta:hover {
+    background: #5a0cb8;
+}
+
+/* Overlay para escurecer o fundo */
+#overlayAlerta {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 1999;
+    display: none;
+}
+
+#overlayAlerta.ativo {
+    display: block;
+}
+
+/* Ajuste para mobile */
+@media (max-width: 480px) {
+    #alertaTermos {
+        padding: 20px;
+        max-width: 95%;
+    }
+    #alertaTermos .titulo-alerta {
+        font-size: 17px;
+    }
+    #alertaTermos .mensagem-alerta {
+        font-size: 14px;
+    }
+}
+@media (max-width: 850px) { /* ✅ Remove o background em telas menores para não poluir */
+    body { background-image: none; }
+}
