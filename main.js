@@ -1236,10 +1236,13 @@ function configurarEventos() {
         let resultadoUpload = { logo: null, fotos: [] };
 
         if (inputImagens && inputImagens.files.length > 0) {
+            console.log('📸 Iniciando upload de %d imagens...', inputImagens.files.length);
             resultadoUpload = await uploadArquivosAfiliado(user.id, 'afiliadoLogo');
+            console.log('✅ Resultado do upload:', resultadoUpload);
             if (!resultadoUpload.logo && inputImagens.files.length > 0) {
                 if (!confirm('Falha ao carregar as imagens. Deseja continuar o cadastro sem fotos?')) {
                     if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
+                    console.log('🛑 Cadastro cancelado pelo usuário devido a falha no upload.');
                     return;
                 }
             }
@@ -1281,13 +1284,16 @@ function configurarEventos() {
         
         // Geocodificar (opcional)
         const enderecoCompleto = `${dadosAfiliado.logradouro}, ${dadosAfiliado.numero}, ${dadosAfiliado.bairro}, ${dadosAfiliado.cidade}, ${dadosAfiliado.estado}, Brasil`;
+        console.log('📍 Geocodificando endereço:', enderecoCompleto);
         const coords = await geocodificarEnderecoFull(enderecoCompleto);
         if (coords) {
+            console.log('📍 Coordenadas encontradas:', coords);
             dadosAfiliado.latitude = coords.lat;
             dadosAfiliado.longitude = coords.lng;
         }
         else {
-            alert("⚠️ Não conseguimos localizar este endereço no mapa. Por favor, verifique se o número, bairro e cidade estão corretos.");
+            console.warn('📍 Falha na geocodificação.');
+            alert("⚠️ Não conseguimos localizar este endereço no mapa. Por favor, verifique se o número e bairro estão corretos.");
             if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
             return;
         }
@@ -1306,33 +1312,50 @@ function configurarEventos() {
                 .single();
             
             if (insertError) throw insertError;
-            console.log('✅ Registro pendente criado:', registroSalvo?.id);
+            console.log('✅ Registro persistido no Supabase ID:', registroSalvo?.id);
             
-            console.log('🔄 Gerando preferência de pagamento...');
+            console.log('💳 Iniciando integração com Mercado Pago...');
+            
+            const precoNumerico = parseFloat(dadosAfiliado.preco_plano.replace('R$', '').replace('.', '').replace(',', '.').trim());
+            if (isNaN(precoNumerico) || precoNumerico <= 0) {
+                throw new Error('Preço do plano inválido: ' + dadosAfiliado.preco_plano);
+            }
 
-            // Chama a função backend (Netlify/Vercel) para criar a preferência
+            const payloadMP = {
+                items: [{
+                    title: dadosAfiliado.plano_escolhido,
+                    unit_price: precoNumerico,
+                    quantity: 1,
+                    currency_id: 'BRL'
+                }],
+                payer: { email: dadosAfiliado.email_contato },
+                external_reference: registroSalvo.id,
+                back_urls: {
+                    success: window.location.origin,
+                    failure: window.location.origin,
+                    pending: window.location.origin
+                },
+                auto_return: "approved"
+            };
+
+            console.log('📤 Enviando payload para Lambda:', payloadMP);
+
             const response = await fetch('/.netlify/functions/create-preference', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    items: [{
-                        title: dadosAfiliado.plano_escolhido,
-                        unit_price: parseFloat(dadosAfiliado.preco_plano.replace('R$', '').replace('.', '').replace(',', '.').trim()),
-                        quantity: 1,
-                        currency_id: 'BRL'
-                    }],
-                    payer: { email: dadosAfiliado.email_contato },
-                    external_reference: registroSalvo.id,
-                    back_urls: {
-                        success: window.location.origin,
-                        failure: window.location.origin,
-                        pending: window.location.origin
-                    },
-                    auto_return: "approved"
-                })
+                body: JSON.stringify(payloadMP)
             });
 
+            console.log('📥 Resposta do Servidor (Status):', response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Erro na resposta da função:', errorText);
+                throw new Error(`Erro no servidor de pagamento (${response.status}). Verifique o console.`);
+            }
+
             const preference = await response.json();
+            console.log('✅ Preferência MP criada:', preference);
 
             if (preference.init_point) {
                 console.log('🚀 Redirecionando para o Mercado Pago...');
