@@ -1294,18 +1294,18 @@ function configurarEventos() {
             id_transacao_mercadopago: null
         };
         
-        // Geocodificar (opcional)
-        const enderecoCompleto = `${dadosAfiliado.logradouro}, ${dadosAfiliado.numero}, ${dadosAfiliado.bairro}, ${dadosAfiliado.cidade}, ${dadosAfiliado.estado}, Brasil`;
-        console.log('📍 Geocodificando endereço:', enderecoCompleto);
-        const coords = await geocodificarEnderecoFull(enderecoCompleto);
+        // ✅ Geocodificar com Fallback (Rua -> Bairro -> Cidade)
+        console.log('📍 Iniciando geocodificação inteligente com fallback...');
+        const coords = await obterCoordenadasComFallback(dadosAfiliado);
+
         if (coords) {
             console.log('📍 Coordenadas encontradas:', coords);
             dadosAfiliado.latitude = coords.lat;
             dadosAfiliado.longitude = coords.lng;
         }
         else {
-            console.warn('📍 Falha na geocodificação.');
-            alert("⚠️ Não conseguimos localizar este endereço no mapa. Por favor, verifique se o número e bairro estão corretos.");
+            console.error('📍 Falha total na geocodificação.');
+            alert("⚠️ Não conseguimos localizar seu endereço automaticamente. Por favor, confira se o nome da cidade e bairro estão escritos corretamente.");
             if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
             return;
         }

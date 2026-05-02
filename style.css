@@ -566,6 +566,13 @@ body {
     margin-bottom: 22px;
     color: #333;
 }
+.instrucao-obrigatoria {
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 15px;
+    font-style: italic;
+}
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
