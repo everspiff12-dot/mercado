@@ -75,8 +75,8 @@ function preencherFormularioAfiliado(perfil) {
         'afiliadoNumero': perfil.numero,
         'afiliadoBairro': perfil.bairro,
         'afiliadoComercio': perfil.tipo_servico,
-        'afiliadoEmailComercial': perfil.email_comercial,
-        'afiliadoAreaAtendimento': perfil.area_cobertura_km,
+        'afiliadoEmailComercial': perfil.email_comercial || perfil.email_contato || '', // ✅ Fallback: usa e-mail de contato se o comercial estiver vazio
+        'afiliadoAreaAtendimento': perfil.area_cobertura_km ? String(perfil.area_cobertura_km) : '25', // ✅ Fallback: define 25km como padrão se estiver vazio
         'afiliadoEstilo': perfil.descricao_servico,
         'afiliadoUrlSite': perfil.url_site_existente,
         'afiliadoWhatsapp': perfil.whatsapp
@@ -1116,12 +1116,16 @@ function validarFormAfiliado() {
 
         if (btn.disabled !== estadoFinal) {
             if (estadoFinal) {
-                console.log('🛠️ Validação: Botão bloqueado. Faltam preencher:', camposFaltantes);
+                console.warn('🛠️ Validação: Botão bloqueado. Campos obrigatórios vazios:', camposFaltantes);
+                // ✅ Adiciona uma dica no botão para ajudar a identificar o que falta
+                btn.title = "Campos obrigatórios faltando: " + camposFaltantes.join(', ');
             } else {
                 console.log('🛠️ Validação: Todos os campos preenchidos. Botão liberado!');
+                btn.title = "";
             }
-            btn.disabled = estadoFinal;
         }
+        // ✅ O botão nunca fica disabled para permitir o clique e mostrar o Toast de aviso
+        btn.style.opacity = estadoFinal ? "0.6" : "1";
     }
 }
 
@@ -1134,6 +1138,24 @@ function validarFormCadastro() {
         return el && el.value.trim() !== '';
     }) && termos;
     if (btn) btn.disabled = !ok;
+}
+
+// ✅ Função para mostrar avisos rápidos (Toast)
+function mostrarToast(mensagem, duracao = 4000) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-mensagem';
+    toast.textContent = mensagem;
+    
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => toast.remove(), 500);
+    }, duracao);
 }
 
 // Modal de Termos
@@ -1202,11 +1224,26 @@ function configurarEventos() {
 // === Submit do formulário de DADOS do afiliado ===
     document.getElementById('formAfiliado')?.addEventListener('submit', async function(e) {
         e.preventDefault();
-        console.log('🚀 Botão clicado! Iniciando processamento...');
 
         const btnSubmit = document.getElementById('btnEnviarAfiliado');
         const originalText = btnSubmit ? btnSubmit.textContent : '';
-        console.log('🔄 Processando cadastro de afiliado...');
+
+        // ✅ Validação manual ao clicar (UX melhorada)
+        const camposObrigatorios = [
+            'afiliadoNome', 'afiliadoEmpresa', 'afiliadoEmail', 'afiliadoTelefone',
+            'afiliadoEstado', 'afiliadoCidade', 'afiliadoLogradouro', 'afiliadoNumero',
+            'afiliadoBairro', 'afiliadoComercio', 'afiliadoAreaAtendimento', 'afiliadoEmailComercial'
+        ];
+        const camposFaltantes = camposObrigatorios.filter(id => !document.getElementById(id)?.value.trim());
+
+        if (camposFaltantes.length > 0) {
+            console.warn('⚠️ Tentativa de envio com campos vazios:', camposFaltantes);
+            mostrarToast('⚠️ Todos os campos marcados com * devem ser preenchidos.');
+            return;
+        }
+
+        console.log('🚀 Botão clicado! Iniciando processamento...');
+        console.log('🔄 Verificando autenticação...');
 
         // ✅ Início do bloco de proteção total
         try {
@@ -1361,6 +1398,9 @@ function configurarEventos() {
             console.log('📥 Resposta do Servidor (Status):', response.status);
             
             if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('A função de pagamento não foi encontrada no servidor (Erro 404). Verifique se o backend foi publicado corretamente.');
+                }
                 const errorText = await response.text();
                 console.error('❌ Erro na resposta da função:', errorText);
                 throw new Error(`Erro no servidor de pagamento (${response.status}). Verifique o console.`);
