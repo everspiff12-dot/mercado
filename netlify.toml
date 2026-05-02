@@ -1,0 +1,8 @@
+[build]
+  # Indica ao Netlify onde as funções estão localizadas
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200

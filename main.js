@@ -1406,12 +1406,12 @@ function configurarEventos() {
             console.log('📥 Resposta do Servidor (Status):', response.status);
             
             if (!response.ok) {
+                const errorText = await response.text().catch(() => 'Erro desconhecido');
                 if (response.status === 404) {
-                    throw new Error('A função de pagamento não foi encontrada no servidor (Erro 404). Verifique se o backend foi publicado corretamente.');
+                    throw new Error(`A função "stats_b" não foi encontrada (404). Verifique se o arquivo está em netlify/functions/stats_b.js e se o deploy foi concluído.`);
                 }
-                const errorText = await response.text();
-                console.error('❌ Erro na resposta da função:', errorText);
-                throw new Error(`Erro no servidor de pagamento (${response.status}). Verifique o console.`);
+                console.error('❌ Detalhes do erro no servidor:', errorText);
+                throw new Error(`Erro no servidor de pagamento (${response.status}): ${errorText}`);
             }
 
             const preference = await response.json();
