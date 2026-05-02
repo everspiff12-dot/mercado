@@ -168,15 +168,28 @@ async function popularCidades(uf, selectId) {
     const inputCidade = document.getElementById(selectId);
     const dataListCidade = document.querySelector(`datalist[id="${inputCidade?.getAttribute('list')}"]`);
     
-    if (!inputCidade || !dataListCidade) return;
+    if (!inputCidade || !dataListCidade || !uf) return;
+
+    // ✅ Normalização: Se receber o nome por extenso, tenta converter para Sigla (apenas 2 letras)
+    // Isso evita o erro 500 da API do IBGE
+    let ufBusca = uf.trim();
+    if (ufBusca.length > 2) {
+        const inputEstado = document.getElementById(selectId.replace('Cidade', 'Estado'));
+        const dataListEstado = document.querySelector(`datalist[id="${inputEstado?.getAttribute('list')}"]`);
+        const opcao = Array.from(dataListEstado?.options || []).find(opt => opt.textContent.toLowerCase() === ufBusca.toLowerCase());
+        if (opcao) ufBusca = opcao.value;
+    }
     
     inputCidade.disabled = true;
     dataListCidade.innerHTML = '';
 
     try {
-        const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`);
+        const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufBusca}/municipios?orderBy=nome`);
+        if (!res.ok) throw new Error('Erro na resposta do IBGE');
         const cidades = await res.json();
         
+        if (!Array.isArray(cidades)) throw new Error('Resposta do IBGE não é uma lista');
+
         cidades.forEach(c => {
             const option = document.createElement('option');
             option.value = c.nome;
@@ -407,8 +420,8 @@ async function garantirPerfilClienteCriado(user) {
                 });
             }
 
-            // Tenta inserir os dados. Se a trigger falhar, o insertError capturará a falha.
-            const { data: novoPerfil, error: insertError } = await supabase.from('clientes').insert({
+            // ✅ Usando UPSERT com onConflict para evitar o erro 409 de duplicidade
+            const { data: novoPerfil, error: insertError } = await supabase.from('clientes').upsert({
                 nome: m.nome || 'Usuário',
                 email: user.email,
                 estado: m.estado || '',
@@ -420,6 +433,9 @@ async function garantirPerfilClienteCriado(user) {
                 longitude: coords?.lng ? Number(coords.lng) : null,
                 usuario_id: user.id,
                 ativo: true
+            }, { 
+                onConflict: 'usuario_id',
+                ignoreDuplicates: false 
             }).select();
 
             if (insertError) {
