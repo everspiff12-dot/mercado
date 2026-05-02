@@ -792,7 +792,8 @@ async function filtrarAfiliados() {
                     resultados = resultados.filter(a => a.tipo_servico === comercio);
                 }
                 
-                // Normalizar campos para bater com o que a UI espera (nome_empresa -> nome)
+                // ✅ Filtro Público Estrito: Apenas ativos e com contato disponível
+                resultados = resultados.filter(a => a.ativo === true);
                 resultados = resultados.map(a => ({ ...a, nome: a.nome_empresa }));
             }
         } else {
@@ -802,11 +803,11 @@ async function filtrarAfiliados() {
             
             const { data, error } = await query;
             if (error) throw error;
-            resultados = data.map(a => ({ ...a, nome: a.nome_empresa }));
+            // ✅ Filtro Público Estrito: Apenas ativos
+            resultados = (data || []).filter(a => a.ativo === true).map(a => ({ ...a, nome: a.nome_empresa }));
         }
 
-        // 4. Filtrar afiliados que não possuem Site nem WhatsApp (canais públicos)
-        // E atualizar o estado global para renderização
+        // 4. Refinamento de exibição: Somente quem o usuário pode contatar agora
         afiliadosFiltrados = resultados.filter(a => 
             (a.url_site_existente && a.url_site_existente.trim() !== '') || 
             (a.whatsapp && (a.whatsapp + '').trim() !== '')
@@ -1729,10 +1730,11 @@ async function carregarAfiliadosNoMapa(filtros = {}) {
     let { data: afiliados, error } = await query;
     if (error) { console.error('Map error:', error); return; }
     
-    // ✅ Filtrar afiliados sem canais de contato públicos para o mapa
+    // ✅ Filtro Público para o Mapa: Apenas ativos e com contato
     afiliados = afiliados.filter(a => 
+        a.ativo === true && (
         (a.url_site_existente && a.url_site_existente.trim() !== '') || 
-        (a.whatsapp && (a.whatsapp + '').trim() !== '')
+        (a.whatsapp && (a.whatsapp + '').trim() !== ''))
     );
 
     for (const a of afiliados) {
@@ -1808,12 +1810,13 @@ async function buscarAfiliadosPorRaio(lat, lng, raio) {
     const supabase = getSupabase();
     if (!supabase) return [];
     try {
-        // Agora usamos a função de negócio correta
         const { data, error } = await supabase.rpc('buscar_afiliados_disponiveis', { 
             user_lat: lat, 
             user_long: lng 
         });
         if (error) throw error;
-        return (data || []).map(a => ({ ...a, nome: a.nome_empresa }));
+
+        // ✅ Garante que a busca por geolocalização só retorne profissionais ativos
+        return (data || []).filter(a => a.ativo === true).map(a => ({ ...a, nome: a.nome_empresa }));
     } catch (e) { console.error('Raio error:', e); return []; }
 }
