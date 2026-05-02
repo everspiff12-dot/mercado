@@ -1100,24 +1100,26 @@ function validarFormAfiliado() {
     ];
     
     const btn = document.getElementById('btnEnviarAfiliado');
-    const checkboxTermos = document.getElementById('afiliadoTermos');
     
-    // Verifica se todos os campos de texto/select têm valor
+    let camposFaltantes = [];
     const todosPreenchidos = camposObrigatorios.every(id => {
         const el = document.getElementById(id);
         const preenchido = el && el.value.trim() !== '';
-        if (!preenchido) {
-            // Log silencioso para debug interno se necessário
-            // console.log(`Campo pendente: ${id}`);
-        }
+        if (!preenchido) camposFaltantes.push(id);
         return preenchido;
     });
 
-    // O botão só habilita se tudo estiver preenchido E o checkbox marcado
     if (btn) {
-        const estadoFinal = !(todosPreenchidos && checkboxTermos?.checked);
+        // ✅ O botão agora habilita se os campos obrigatórios estiverem preenchidos.
+        // O checkbox de termos NÃO bloqueia mais o clique (o alerta aparecerá ao clicar).
+        const estadoFinal = !todosPreenchidos;
+
         if (btn.disabled !== estadoFinal) {
-            console.log(`🛠️ Validação do formulário: ${estadoFinal ? 'Bloqueado (campos faltando)' : 'Liberado'}`);
+            if (estadoFinal) {
+                console.log('🛠️ Validação: Botão bloqueado. Faltam preencher:', camposFaltantes);
+            } else {
+                console.log('🛠️ Validação: Todos os campos preenchidos. Botão liberado!');
+            }
             btn.disabled = estadoFinal;
         }
     }
