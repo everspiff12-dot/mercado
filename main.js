@@ -94,6 +94,7 @@ function preencherFormularioAfiliado(perfil) {
         popularCidades(perfil.estado, 'afiliadoCidade').then(() => {
             const elCidade = document.getElementById('afiliadoCidade');
             if (elCidade) elCidade.value = perfil.cidade || '';
+            if (elCidade) elCidade.dispatchEvent(new Event('input')); // ✅ Notifica a validação que a cidade foi preenchida
         });
     }
 }
@@ -1192,12 +1193,20 @@ function configurarEventos() {
         e.preventDefault();
         
         const btnSubmit = document.getElementById('btnEnviarAfiliado');
-        const originalText = btnSubmit ? btnSubmit.innerHTML : '';
+        const originalText = btnSubmit ? btnSubmit.textContent : '';
         console.log('🔄 Processando cadastro de afiliado...');
+
+        // ✅ Início do bloco de proteção total
+        try {
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = 'Processando...';
+            }
         
         const supabase = getSupabase();
         if (!supabase) {
             alert('⚠️ Conexão com servidor indisponível.');
+            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
             return;
         }
         
@@ -1206,6 +1215,7 @@ function configurarEventos() {
         if (!termosCheckbox?.checked) {
             mostrarAlertaTermos();
             destacarErroTermos('containerAfiliadoTermos');
+            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
             return;
         }
         
@@ -1215,12 +1225,8 @@ function configurarEventos() {
         if (!user) {
             alert('🔐 Você precisa estar logado para continuar.');
             mostrarPagina('login-cliente');
+            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
             return;
-        }
-        
-        if (btnSubmit) {
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = 'Processando...';
         }
 
         console.log('✅ Usuário autenticado:', user.email, 'ID:', user.id);
@@ -1233,6 +1239,7 @@ function configurarEventos() {
             resultadoUpload = await uploadArquivosAfiliado(user.id, 'afiliadoLogo');
             if (!resultadoUpload.logo && inputImagens.files.length > 0) {
                 if (!confirm('Falha ao carregar as imagens. Deseja continuar o cadastro sem fotos?')) {
+                    if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
                     return;
                 }
             }
@@ -1273,24 +1280,18 @@ function configurarEventos() {
         };
         
         // Geocodificar (opcional)
-        try {
-            const enderecoCompleto = `${dadosAfiliado.logradouro}, ${dadosAfiliado.numero}, ${dadosAfiliado.bairro}, ${dadosAfiliado.cidade}, ${dadosAfiliado.estado}, Brasil`;
-            const coords = await geocodificarEnderecoFull(enderecoCompleto);
-            if (coords) {
-                dadosAfiliado.latitude = coords.lat;
-                dadosAfiliado.longitude = coords.lng;
-            }
-            else {
-                throw new Error("Não conseguimos localizar este endereço no mapa. Verifique o número e bairro.");
-            }
-        } catch (geoErr) {
-            console.warn('Geocodificação falhou:', geoErr);
-            alert('⚠️ Erro de Localização: ' + geoErr.message);
-            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = originalText; }
-            return; // Interrompe o cadastro se não houver localização
+        const enderecoCompleto = `${dadosAfiliado.logradouro}, ${dadosAfiliado.numero}, ${dadosAfiliado.bairro}, ${dadosAfiliado.cidade}, ${dadosAfiliado.estado}, Brasil`;
+        const coords = await geocodificarEnderecoFull(enderecoCompleto);
+        if (coords) {
+            dadosAfiliado.latitude = coords.lat;
+            dadosAfiliado.longitude = coords.lng;
         }
-        
-        try {
+        else {
+            alert("⚠️ Não conseguimos localizar este endereço no mapa. Por favor, verifique se o número, bairro e cidade estão corretos.");
+            if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.textContent = originalText; }
+            return;
+        }
+
             console.log('🔄 Salvando dados como PENDENTE no Supabase...');
             
             // ✅ UPSERT no Supabase (Atualiza se já existir, insere se for novo)
@@ -1354,7 +1355,7 @@ function configurarEventos() {
         } finally {
             if (btnSubmit) {
                 btnSubmit.disabled = false;
-                btnSubmit.innerHTML = originalText;
+                btnSubmit.textContent = originalText;
             }
         }
     });
