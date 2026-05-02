@@ -1105,12 +1105,21 @@ function validarFormAfiliado() {
     // Verifica se todos os campos de texto/select têm valor
     const todosPreenchidos = camposObrigatorios.every(id => {
         const el = document.getElementById(id);
-        return el && el.value.trim() !== '';
+        const preenchido = el && el.value.trim() !== '';
+        if (!preenchido) {
+            // Log silencioso para debug interno se necessário
+            // console.log(`Campo pendente: ${id}`);
+        }
+        return preenchido;
     });
 
     // O botão só habilita se tudo estiver preenchido E o checkbox marcado
     if (btn) {
-        btn.disabled = !(todosPreenchidos && checkboxTermos?.checked);
+        const estadoFinal = !(todosPreenchidos && checkboxTermos?.checked);
+        if (btn.disabled !== estadoFinal) {
+            console.log(`🛠️ Validação do formulário: ${estadoFinal ? 'Bloqueado (campos faltando)' : 'Liberado'}`);
+            btn.disabled = estadoFinal;
+        }
     }
 }
 
@@ -1191,7 +1200,8 @@ function configurarEventos() {
 // === Submit do formulário de DADOS do afiliado ===
     document.getElementById('formAfiliado')?.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
+        console.log('🚀 Botão clicado! Iniciando processamento...');
+
         const btnSubmit = document.getElementById('btnEnviarAfiliado');
         const originalText = btnSubmit ? btnSubmit.textContent : '';
         console.log('🔄 Processando cadastro de afiliado...');
