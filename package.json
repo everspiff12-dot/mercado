@@ -1,0 +1,10 @@
+{
+  "name": "carrinho-expresso",
+  "version": "1.0.0",
+  "description": "Sistema de Afiliados com Mercado Pago",
+  "main": "main.js",
+  "dependencies": {
+    "mercadopago": "^1.5.17",
+    "@supabase/supabase-js": "^2.39.3"
+  }
+}

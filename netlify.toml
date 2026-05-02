@@ -1,8 +1,9 @@
 [build]
-  # Indica ao Netlify onde as funções estão localizadas
   functions = "netlify/functions"
+  publish = "."
 
 [[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
+  # Redireciona rotas de SPA para o index, mas ignora funções internas
+  from = "/*"
+  to = "/index.html"
   status = 200
