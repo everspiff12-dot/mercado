@@ -1124,7 +1124,8 @@ function validarFormAfiliado() {
                 btn.title = "";
             }
         }
-        // ✅ O botão nunca fica disabled para permitir o clique e mostrar o Toast de aviso
+        // ✅ Garantimos que o botão esteja habilitado para o clique, mudando apenas a aparência
+        btn.disabled = false;
         btn.style.opacity = estadoFinal ? "0.6" : "1";
     }
 }
@@ -1227,6 +1228,12 @@ function configurarEventos() {
 
         const btnSubmit = document.getElementById('btnEnviarAfiliado');
         const originalText = btnSubmit ? btnSubmit.textContent : '';
+
+        // ✅ Evita cliques duplos se já estiver processando
+        if (btnSubmit && btnSubmit.textContent === 'Processando...') {
+            console.warn('⏳ Já existe um processamento em curso...');
+            return;
+        }
 
         // ✅ Validação manual ao clicar (UX melhorada)
         const camposObrigatorios = [
@@ -1389,7 +1396,8 @@ function configurarEventos() {
 
             console.log('📤 Enviando payload para Lambda:', payloadMP);
 
-            const response = await fetch('/.netlify/functions/create-preference', {
+            // ✅ Corrigido: O endpoint deve coincidir com o nome do arquivo (stats_b.js)
+            const response = await fetch('/.netlify/functions/stats_b', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payloadMP)
