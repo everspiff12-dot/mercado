@@ -1,3 +1,9 @@
+// ✅ Função de sanitização para evitar ataques XSS
+const escapeHTML = (str) => String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+
+// ✅ Inicialização opcional do SDK (apenas se for usar componentes ou modal)
+// const mp = new MercadoPago('SUA_PUBLIC_KEY_AQUI', { locale: 'pt-BR' });
+
 // ============ DADOS LOCAIS ============
 const listaAfiliados = [
     { id: 1, nome: "João Silva", cidade: "São Paulo", estado: "SP", regiao: "Sudeste", comercio: "pedreiro", telefone: "(11) 99999-9999", email: "joao@pedreiro.com" },
@@ -699,8 +705,8 @@ function carregarAfiliados() {
     container.innerHTML = itensExibidos.map(a => `
         <div class="product-card">
             <div class="card-content">
-                <div style="font-size:28px; margin-bottom:2px;">${emojis[a.tipo_servico] || emojis[a.comercio] || '🏪'}</div>
-                <h3>${a.nome_empresa || a.nome}</h3>
+                <div style="font-size:28px; margin-bottom:2px;">${escapeHTML(emojis[a.tipo_servico] || emojis[a.comercio] || '🏪')}</div>
+                <h3>${escapeHTML(a.nome_empresa || a.nome)}</h3>
                 
                 <div class="card-info" style="text-align: center; margin: 2px 0;">
                     <p>${nomes[a.tipo_servico] || nomes[a.comercio] || 'Profissional'}</p>
@@ -1387,6 +1393,7 @@ function configurarEventos() {
                 payer: { email: dadosAfiliado.email_contato },
                 external_reference: registroSalvo.id,
                 back_urls: {
+                    success: `${window.location.origin}/index.html`,
                     success: `${window.location.origin}/index.html`,
                     failure: `${window.location.origin}/index.html`,
                     pending: `${window.location.origin}/index.html`
