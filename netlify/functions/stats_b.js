@@ -10,10 +10,13 @@ exports.handler = async (event) => {
     try {
         const { items, payer, external_reference, back_urls } = JSON.parse(event.body);
         
+        // ✅ Garante que a URL seja absoluta. No Netlify, process.env.URL é a URL do seu site.
+        const siteUrl = process.env.URL || 'https://seu-site.netlify.app';
+
         const preference = {
             items, payer, external_reference, back_urls,
             auto_return: 'approved',
-            notification_url: `${process.env.URL}/.netlify/functions/webhook-mercado-pago`
+            notification_url: `${siteUrl}/.netlify/functions/webhook-mercado-pago`
         };
         
         const result = await mercadopago.preferences.create(preference);

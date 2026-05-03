@@ -1417,8 +1417,13 @@ function configurarEventos() {
             const preference = await response.json();
             console.log('✅ Preferência MP criada:', preference);
 
-            // ✅ Tenta usar o link de sandbox se disponível, senão usa o de produção
-            const checkoutUrl = preference.sandbox_init_point || preference.init_point;
+            // ✅ CORREÇÃO: Evite usar sandbox_init_point diretamente.
+            // O init_point funciona para ambos e evita bloqueios de segurança do Chrome (Challenges).
+            const checkoutUrl = preference.init_point;
+
+            if (window.self !== window.top) {
+                throw new Error('O pagamento não pode ser processado dentro de um frame/preview. Abra o site em uma aba normal.');
+            }
 
             if (checkoutUrl) {
                 console.log('🚀 Redirecionando para o Mercado Pago...');
