@@ -1387,9 +1387,9 @@ function configurarEventos() {
                 payer: { email: dadosAfiliado.email_contato },
                 external_reference: registroSalvo.id,
                 back_urls: {
-                    success: window.location.origin,
-                    failure: window.location.origin,
-                    pending: window.location.origin
+                    success: `${window.location.origin}/index.html`,
+                    failure: `${window.location.origin}/index.html`,
+                    pending: `${window.location.origin}/index.html`
                 },
                 auto_return: "approved"
             };
@@ -1417,17 +1417,14 @@ function configurarEventos() {
             const preference = await response.json();
             console.log('✅ Preferência MP criada:', preference);
 
-            // ✅ CORREÇÃO: Evite usar sandbox_init_point diretamente.
-            // O init_point funciona para ambos e evita bloqueios de segurança do Chrome (Challenges).
+            // ✅ CORREÇÃO: Usamos o init_point (que serve para teste e produção)
+            // e forçamos o redirecionamento no nível superior (window.top)
             const checkoutUrl = preference.init_point;
-
-            if (window.self !== window.top) {
-                throw new Error('O pagamento não pode ser processado dentro de um frame/preview. Abra o site em uma aba normal.');
-            }
 
             if (checkoutUrl) {
                 console.log('🚀 Redirecionando para o Mercado Pago...');
-                window.location.href = checkoutUrl;
+                // window.top garante que sairemos de qualquer iframe de visualização (como o do Netlify ou VS Code)
+                window.top.location.href = checkoutUrl;
             } else {
                 throw new Error('Falha ao gerar link de pagamento.');
             }
