@@ -22,6 +22,7 @@ exports.handler = async (event) => {
             statusCode: 200,
             body: JSON.stringify({
                 init_point: result.body.init_point,
+                sandbox_init_point: result.body.sandbox_init_point, // ✅ Retorna o link de teste explicitamente
                 preferenceId: result.body.id
             })
         };

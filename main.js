@@ -1417,9 +1417,12 @@ function configurarEventos() {
             const preference = await response.json();
             console.log('✅ Preferência MP criada:', preference);
 
-            if (preference.init_point) {
+            // ✅ Tenta usar o link de sandbox se disponível, senão usa o de produção
+            const checkoutUrl = preference.sandbox_init_point || preference.init_point;
+
+            if (checkoutUrl) {
                 console.log('🚀 Redirecionando para o Mercado Pago...');
-                window.location.href = preference.init_point;
+                window.location.href = checkoutUrl;
             } else {
                 throw new Error('Falha ao gerar link de pagamento.');
             }
