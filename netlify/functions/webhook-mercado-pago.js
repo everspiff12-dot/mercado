@@ -4,10 +4,10 @@ const mercadopago = require('mercadopago');
 
 mercadopago.configure({ access_token: process.env.MP_ACCESS_TOKEN });
 
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY // ✅ Service role apenas no backend!
-);
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 exports.handler = async (event) => {
     try {
